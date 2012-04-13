@@ -45,7 +45,8 @@ grab_cid_hook=1    # -1 = off by default, 1 = on by default
 # Function to test for invalid $1 argument
 invalid_argument()
 {
-    if [[ "$1" != "create" && "$1" != "clone" && "$1" != "ls" ]]
+    if [[ "$1" != "create" && "$1" != "clone" && "$1" != "ls" &&
+          "$1" != "hook" ]]
     then
         return 0
     else
@@ -67,6 +68,9 @@ print_usage()
     echo "List all projects (that you have read-access to;"
     echo "    may include projects not owned by you)"
     echo "$0 ls"
+    echo ""
+    echo "Copy the hookfile into a project directory:"
+    echo "$0 hook <Git Project Directory>"
     echo ""
     echo "Arguments:"
     echo "----------"
@@ -147,6 +151,17 @@ fi
 if [[ "$1" == ls ]]
 then
     ssh -p $port $hostname gerrit ls-projects
+elif [[ "$1" == hook ]]
+then
+    if [[ -z $2 ]]
+    then
+        echo "Missing <Git Project Directory>"
+        echo "Rerun as $0 hook <Git Project Directory>"
+        echo "    or $0 -u to print usage."
+        exit 1
+    else
+        scp -p -P $port $hostname:hooks/commit-msg $2/.git/hooks/
+    fi
 else
     # Either create or clone was called
     
